@@ -69,6 +69,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- React & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -268,12 +271,12 @@
             0%, 100% { 
                 opacity: 1;
                 background-color: #f97316;
-                boxShadow: 0 0 10px #f97316;
+                box-shadow: 0 0 10px #f97316;
             }
             50% { 
                 opacity: 0.8;
                 background-color: #fb923c;
-                boxShadow: 0 0 20px #f97316;
+                box-shadow: 0 0 20px #f97316;
             }
         }
         .transaction-id-yellow {
@@ -528,7 +531,6 @@
         .social-link:hover {
             transform: translateY(-2px);
         }
-        /* Quote extra fields */
         .quote-extra-field {
             border: 1px solid #e2e8f0;
             border-radius: 12px;
@@ -564,6 +566,11 @@
 
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef, useCallback } = React;
+
+        // Supabase Configuration
+        const supabaseUrl = 'https://ymsgbefursktbjgjdfy.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltc2diZWZ1cnNrdGJpamdqZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNDY2NDgsImV4cCI6MjA4NzYyMjY0OH0.luUFjfy0XFOUZfPjsyI2FbZvUuq_xYB4wVDfDUlKrDc';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         // --- CONSTANTS & DATA ---
         const COMPANY_INFO = {
@@ -1145,6 +1152,153 @@
             return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
         };
 
+        // --- SUPABASE DATA LOADING FUNCTIONS ---
+        const loadProductsFromSupabase = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Error loading products from Supabase:', error);
+                    return null;
+                }
+                return data;
+            } catch (error) {
+                console.error('Supabase products loading error:', error);
+                return null;
+            }
+        };
+
+        const loadOrdersFromSupabase = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Error loading orders from Supabase:', error);
+                    return null;
+                }
+                return data;
+            } catch (error) {
+                console.error('Supabase orders loading error:', error);
+                return null;
+            }
+        };
+
+        const loadUsersFromSupabase = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Error loading users from Supabase:', error);
+                    return null;
+                }
+                return data;
+            } catch (error) {
+                console.error('Supabase users loading error:', error);
+                return null;
+            }
+        };
+
+        const saveProductToSupabase = async (product) => {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .insert([product]);
+                
+                if (error) {
+                    console.error('Error saving product to Supabase:', error);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Supabase product save error:', error);
+                return false;
+            }
+        };
+
+        const saveOrderToSupabase = async (order) => {
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .insert([order]);
+                
+                if (error) {
+                    console.error('Error saving order to Supabase:', error);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Supabase order save error:', error);
+                return false;
+            }
+        };
+
+        const saveUserToSupabase = async (user) => {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .insert([user]);
+                
+                if (error) {
+                    console.error('Error saving user to Supabase:', error);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Supabase user save error:', error);
+                return false;
+            }
+        };
+
+        const updateOrderInSupabase = async (orderId, updates) => {
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .update(updates)
+                    .eq('order_id', orderId);
+                
+                if (error) {
+                    console.error('Error updating order in Supabase:', error);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Supabase order update error:', error);
+                return false;
+            }
+        };
+
+        const uploadFileToStorage = async (bucket, file, fileName) => {
+            try {
+                const { data, error } = await supabase.storage
+                    .from(bucket)
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+                
+                if (error) {
+                    console.error('Error uploading file to Supabase:', error);
+                    return null;
+                }
+                
+                // Get public URL
+                const { data: urlData } = supabase.storage
+                    .from(bucket)
+                    .getPublicUrl(fileName);
+                
+                return urlData.publicUrl;
+            } catch (error) {
+                console.error('Supabase file upload error:', error);
+                return null;
+            }
+        };
+
         // --- MAIN APP COMPONENT ---
         const App = () => {
             const [isAdmin, setIsAdmin] = useState(false);
@@ -1220,23 +1374,10 @@
             });
             const [isCartOpen, setIsCartOpen] = useState(false);
             
-            const [orders, setOrders] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('sa_orders_v2');
-                    return saved ? JSON.parse(saved) : [];
-                } catch {
-                    return [];
-                }
-            });
-
-            const [users, setUsers] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('sa_users_v2');
-                    return saved ? JSON.parse(saved) : [];
-                } catch {
-                    return [];
-                }
-            });
+            const [orders, setOrders] = useState([]);
+            const [users, setUsers] = useState([]);
+            const [products, setProducts] = useState([]);
+            const [loading, setLoading] = useState(true);
 
             // --- CERTIFICATES STATE ---
             const [tradeLicenseFile, setTradeLicenseFile] = useState(() => {
@@ -1354,14 +1495,6 @@
                     return DEFAULT_HERO_CONFIG;
                 }
             });
-            const [products, setProducts] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('sa_products_v2');
-                    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-                } catch {
-                    return INITIAL_PRODUCTS;
-                }
-            });
             const [brands, setBrands] = useState(() => {
                 try {
                     const saved = localStorage.getItem('sa_brands_v2');
@@ -1378,6 +1511,42 @@
                 wechat: { type: 'url', url: '', data: null }
             });
 
+            // --- LOAD DATA FROM SUPABASE ON INITIAL RENDER ---
+            useEffect(() => {
+                const loadData = async () => {
+                    setLoading(true);
+                    
+                    // Load products
+                    const productsData = await loadProductsFromSupabase();
+                    if (productsData && productsData.length > 0) {
+                        setProducts(productsData);
+                    } else {
+                        // Fallback to initial products if Supabase has no data
+                        setProducts(INITIAL_PRODUCTS);
+                        // Optionally save initial products to Supabase
+                        for (const product of INITIAL_PRODUCTS) {
+                            await saveProductToSupabase(product);
+                        }
+                    }
+                    
+                    // Load orders
+                    const ordersData = await loadOrdersFromSupabase();
+                    if (ordersData) {
+                        setOrders(ordersData);
+                    }
+                    
+                    // Load users
+                    const usersData = await loadUsersFromSupabase();
+                    if (usersData) {
+                        setUsers(usersData);
+                    }
+                    
+                    setLoading(false);
+                };
+                
+                loadData();
+            }, []);
+
             // --- HERO SLIDER ---
             const [currentSlide, setCurrentSlide] = useState(0);
             useEffect(() => {
@@ -1389,14 +1558,11 @@
                 return () => clearInterval(timer);
             }, [heroConfig]);
 
-            // --- PERSISTENCE ---
+            // --- PERSISTENCE (localStorage fallback) ---
             useEffect(() => localStorage.setItem('sa_logo_v2', logo), [logo]);
             useEffect(() => localStorage.setItem('sa_hero_config_v2', JSON.stringify(heroConfig)), [heroConfig]);
-            useEffect(() => localStorage.setItem('sa_products_v2', JSON.stringify(products)), [products]);
             useEffect(() => localStorage.setItem('sa_brands_v2', JSON.stringify(brands)), [brands]);
             useEffect(() => localStorage.setItem('sa_cart_v2', JSON.stringify(cart)), [cart]);
-            useEffect(() => localStorage.setItem('sa_orders_v2', JSON.stringify(orders)), [orders]);
-            useEffect(() => localStorage.setItem('sa_users_v2', JSON.stringify(users)), [users]);
             useEffect(() => localStorage.setItem('sa_origin_options', JSON.stringify(originOptions)), [originOptions]);
             
             // Persist QR codes
@@ -1475,7 +1641,7 @@
                 }
             };
 
-            const handleAuthSubmit = (e) => {
+            const handleAuthSubmit = async (e) => {
                 e.preventDefault();
                 if (!validatePhoneNumber(authForm.phone)) {
                     alert('Please enter a valid 11-digit phone number starting with 0');
@@ -1483,10 +1649,17 @@
                 }
 
                 if (authMode === 'register') {
-                    if (users.find(u => u.phone === authForm.phone)) {
+                    // Check if user exists in Supabase
+                    const { data: existingUser } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('phone', authForm.phone);
+                    
+                    if (existingUser && existingUser.length > 0) {
                         alert('User already exists with this phone number!');
                         return;
                     }
+                    
                     const newUser = { 
                         ...authForm, 
                         id: Date.now().toString(), 
@@ -1498,6 +1671,11 @@
                         } : null,
                         profilePic: authForm.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(authForm.name)}&background=2196F3&color=fff&size=128`
                     };
+                    
+                    // Save to Supabase
+                    await saveUserToSupabase(newUser);
+                    
+                    // Update local state
                     setUsers([...users, newUser]);
                     setCurrentUser(newUser);
                     setShowAuthModal(false);
@@ -1521,16 +1699,22 @@
                     setAuthForm({ name: '', phone: '', password: '', road: '', thana: '', city: '', profilePic: null });
                     alert('Account created successfully!');
                 } else {
-                    const user = users.find(u => u.phone === authForm.phone && u.password === authForm.password);
-                    if (user) {
-                        setCurrentUser(user);
+                    // Login - check Supabase
+                    const { data: user } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('phone', authForm.phone)
+                        .eq('password', authForm.password);
+                    
+                    if (user && user.length > 0) {
+                        setCurrentUser(user[0]);
                         setShowAuthModal(false);
                         setCustomerForm({
-                            name: user.name,
-                            phone: user.phone,
-                            road: user.address?.road || '',
-                            thana: user.address?.thana || '',
-                            city: user.address?.city || '',
+                            name: user[0].name,
+                            phone: user[0].phone,
+                            road: user[0].address?.road || '',
+                            thana: user[0].address?.thana || '',
+                            city: user[0].address?.city || '',
                             qty: 1,
                             deliveryTime: '',
                             origin: '',
@@ -1550,13 +1734,13 @@
             };
 
             // Edit Profile Function
-            const handleEditProfile = (e) => {
+            const handleEditProfile = async (e) => {
                 e.preventDefault();
                 if (currentUser) {
                     const updatedUser = {
                         ...currentUser,
                         name: customerForm.name,
-                        phone: currentUser.phone, // Phone number cannot be changed
+                        phone: currentUser.phone,
                         address: {
                             road: customerForm.road,
                             thana: customerForm.thana,
@@ -1564,6 +1748,12 @@
                         },
                         profilePic: customerForm.profilePic || currentUser.profilePic
                     };
+                    
+                    // Update in Supabase
+                    await supabase
+                        .from('users')
+                        .update(updatedUser)
+                        .eq('id', currentUser.id);
                     
                     setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
                     setCurrentUser(updatedUser);
@@ -1786,7 +1976,7 @@
             };
 
             // FIXED: submitOrder function with proper error handling
-            const submitOrder = (e) => {
+            const submitOrder = async (e) => {
                 e.preventDefault();
                 
                 try {
@@ -1864,6 +2054,9 @@
                         }
                     };
 
+                    // Save to Supabase
+                    await saveOrderToSupabase(newOrder);
+                    
                     setOrders(prevOrders => [newOrder, ...prevOrders]);
                     
                     let message = `*${isSingleQuote ? "🔍 QUOTE REQUEST" : "🛒 NEW ORDER"} - ${orderId}*\n\n`;
@@ -1942,7 +2135,7 @@
             };
 
             // --- ADMIN LOGIC ---
-            const updateOrderStatus = (id, newStatus) => {
+            const updateOrderStatus = async (id, newStatus) => {
                 const order = orders.find(o => o.id === id);
                 
                 // For quote type orders, disable status changes until admin sends quote
@@ -1961,11 +2154,15 @@
                 
                 // When TXN ID is verified, auto approve order
                 if (order.payment?.trxApproved && newStatus === 'Processing') {
-                    setOrders(orders.map(o => o.id === id ? { 
-                        ...o, 
+                    const updates = {
                         status: 'Approved',
                         statusMessage: 'Transaction ID verified. Order approved automatically.'
-                    } : o));
+                    };
+                    
+                    // Update in Supabase
+                    await updateOrderInSupabase(id, updates);
+                    
+                    setOrders(orders.map(o => o.id === id ? { ...o, ...updates } : o));
                     
                     const message = `*Order Auto-Approved - ${id}*\n\n` +
                         `Dear ${order.customer.name},\n\n` +
@@ -1983,11 +2180,14 @@
                 }
                 // When Shipped is active, Delivered becomes available
                 else if (order.status === 'Shipped' && newStatus === 'Delivered') {
-                    setOrders(orders.map(o => o.id === id ? { 
-                        ...o, 
+                    const updates = {
                         status: 'Delivered',
                         statusMessage: 'Order has been marked as delivered.'
-                    } : o));
+                    };
+                    
+                    await updateOrderInSupabase(id, updates);
+                    
+                    setOrders(orders.map(o => o.id === id ? { ...o, ...updates } : o));
                     
                     const message = `*Order Delivered - ${id}*\n\n` +
                         `Dear ${order.customer.name},\n\n` +
@@ -1999,13 +2199,15 @@
                 // NEW: When Delivered is active, Done becomes available
                 else if (order.status === 'Delivered' && newStatus === 'Done') {
                     // Mark order as Done/Completed/Closed - remove customer view data but keep documents for admin
-                    setOrders(orders.map(o => o.id === id ? { 
-                        ...o, 
+                    const updates = {
                         status: 'Done',
                         statusMessage: 'Order completed. Thank you for your business!',
-                        // Keep only essential data for admin, but hide from customer view
                         hideFromCustomer: true
-                    } : o));
+                    };
+                    
+                    await updateOrderInSupabase(id, updates);
+                    
+                    setOrders(orders.map(o => o.id === id ? { ...o, ...updates } : o));
                     
                     const message = `*Order Completed - ${id}*\n\n` +
                         `Dear ${order.customer.name},\n\n` +
@@ -2020,19 +2222,24 @@
                     setCurrentStatus(newStatus);
                     setShowStatusModal(true);
                 } else {
-                    setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus, statusMessage: '' } : o));
+                    const updates = { status: newStatus, statusMessage: '' };
+                    await updateOrderInSupabase(id, updates);
+                    setOrders(orders.map(o => o.id === id ? { ...o, ...updates } : o));
                 }
             };
 
-            const handleStatusUpdate = () => {
+            const handleStatusUpdate = async () => {
                 if (currentOrderId && statusMessage) {
                     const order = orders.find(o => o.id === currentOrderId);
                     
-                    setOrders(orders.map(o => o.id === currentOrderId ? { 
-                        ...o, 
-                        status: currentStatus, 
-                        statusMessage: statusMessage 
-                    } : o));
+                    const updates = {
+                        status: currentStatus,
+                        statusMessage: statusMessage
+                    };
+                    
+                    await updateOrderInSupabase(currentOrderId, updates);
+                    
+                    setOrders(orders.map(o => o.id === currentOrderId ? { ...o, ...updates } : o));
                     
                     const message = `*Order Status Update - ${currentOrderId}*\n\n` +
                         `Dear ${order.customer.name},\n\n` +
@@ -2049,7 +2256,7 @@
                 }
             };
 
-            const handleTrackingSubmit = () => {
+            const handleTrackingSubmit = async () => {
                 if (currentOrderForTracking && trackingPlatform && trackingNumber) {
                     const platform = COURIER_PLATFORMS.find(p => p.id === trackingPlatform);
                     const trackingUrl = platform ? platform.url + trackingNumber : '#';
@@ -2075,6 +2282,8 @@
                             bin_certificate: trackingBin
                         };
                     }
+                    
+                    await updateOrderInSupabase(currentOrderForTracking.id, updates);
                     
                     setOrders(orders.map(o => o.id === currentOrderForTracking.id ? {
                         ...o,
@@ -2114,17 +2323,23 @@
                 setShowTrxModal(true);
             };
 
-            const submitTransactionId = () => {
+            const submitTransactionId = async () => {
                 if (currentOrderForTrx && trxInput) {
-                    setOrders(orders.map(o => o.id === currentOrderForTrx.id ? {
-                        ...o,
+                    const updates = {
                         status: 'Processing',
                         payment: {
-                            ...o.payment,
+                            ...currentOrderForTrx.payment,
                             trxId: trxInput,
                             trxApproved: false
                         },
                         statusMessage: `Transaction ID submitted: ${trxInput}. Awaiting admin approval.`
+                    };
+                    
+                    await updateOrderInSupabase(currentOrderForTrx.id, updates);
+                    
+                    setOrders(orders.map(o => o.id === currentOrderForTrx.id ? {
+                        ...o,
+                        ...updates
                     } : o));
                     
                     const message = `*Transaction ID Submitted - ${currentOrderForTrx.id}*\n\n` +
@@ -2145,16 +2360,19 @@
             };
 
             // Admin approve transaction
-            const approveTransaction = (orderId) => {
-                setOrders(orders.map(o => o.id === orderId ? {
-                    ...o,
+            const approveTransaction = async (orderId) => {
+                const updates = {
                     payment: {
-                        ...o.payment,
+                        ...orders.find(o => o.id === orderId).payment,
                         trxApproved: true
                     },
                     status: 'Approved',
                     statusMessage: 'Transaction ID verified and approved. Order approved automatically.'
-                } : o));
+                };
+                
+                await updateOrderInSupabase(orderId, updates);
+                
+                setOrders(orders.map(o => o.id === orderId ? { ...o, ...updates } : o));
                 
                 const order = orders.find(o => o.id === orderId);
                 const message = `*Transaction Approved - ${orderId}*\n\n` +
@@ -2263,7 +2481,7 @@
             };
 
             // FIXED: submitMushak63 with proper state update to prevent white screen
-            const submitMushak63 = () => {
+            const submitMushak63 = async () => {
                 if (currentOrderForMushak63 && (mushak63File || binFile)) {
                     // Create a copy of the order to update
                     const orderIndex = orders.findIndex(o => o.id === currentOrderForMushak63.id);
@@ -2280,6 +2498,12 @@
                     };
                     
                     orderToUpdate.statusMessage = `${mushak63File ? 'Mushak-6.3' : ''}${mushak63File && binFile ? ' and ' : ''}${binFile ? 'BIN Certificate' : ''} uploaded by admin.`;
+                    
+                    // Update in Supabase
+                    await updateOrderInSupabase(currentOrderForMushak63.id, {
+                        documents: orderToUpdate.documents,
+                        statusMessage: orderToUpdate.statusMessage
+                    });
                     
                     updatedOrders[orderIndex] = orderToUpdate;
                     setOrders(updatedOrders);
@@ -2306,7 +2530,7 @@
             };
 
             // FIXED: submitDocuments with proper state update and customer BIN file
-            const submitDocuments = () => {
+            const submitDocuments = async () => {
                 if (currentOrderForDocs) {
                     try {
                         const orderIndex = orders.findIndex(o => o.id === currentOrderForDocs.id);
@@ -2327,6 +2551,12 @@
                             ...docReferences
                         };
                         orderToUpdate.statusMessage = 'Documents submitted successfully.';
+                        
+                        // Update in Supabase
+                        await updateOrderInSupabase(currentOrderForDocs.id, {
+                            documents: orderToUpdate.documents,
+                            statusMessage: orderToUpdate.statusMessage
+                        });
                         
                         updatedOrders[orderIndex] = orderToUpdate;
                         setOrders(updatedOrders);
@@ -2449,6 +2679,9 @@
                             quoteMismatches: mismatches.length > 0 ? mismatches : null
                         };
                         
+                        // Save to Supabase
+                        saveOrderToSupabase(newOrder);
+                        
                         setOrders([newOrder, ...filteredOrders]);
                         
                         let mismatchMessage = '';
@@ -2487,15 +2720,18 @@
                 }
             };
 
-            const handleDeclineSubmit = () => {
+            const handleDeclineSubmit = async () => {
                 if (declineOrderId && declineReason) {
-                    setOrders(orders.map(o => o.id === declineOrderId ? {
-                        ...o,
+                    const updates = {
                         status: 'Cancelled',
                         statusMessage: `Customer declined: ${declineReason}`,
                         customerResponse: 'NO',
                         declineReason: declineReason
-                    } : o));
+                    };
+                    
+                    await updateOrderInSupabase(declineOrderId, updates);
+                    
+                    setOrders(orders.map(o => o.id === declineOrderId ? { ...o, ...updates } : o));
                     
                     const order = orders.find(o => o.id === declineOrderId);
                     const message = `*Quote Declined - ${declineOrderId}*\n\n` +
@@ -2527,7 +2763,7 @@
                 setShowConfirmModal(true);
             };
 
-            const submitConfirmedQuote = () => {
+            const submitConfirmedQuote = async () => {
                 if (!quoteSubtotal || !quoteLeadTime || !quoteWarranty) {
                     alert('Please enter price, lead time and warranty');
                     return;
@@ -2538,8 +2774,7 @@
                 const vat = parseFloat(quoteVAT);
                 const grandTotal = parseFloat(quoteGrandTotal);
 
-                setOrders(orders.map(o => o.id === quoteToConfirm.id ? {
-                    ...o,
+                const updates = {
                     status: 'Hold',
                     statusMessage: `Quoted Price: ৳${grandTotal.toLocaleString()}, Lead Time: ${quoteLeadTime}, Warranty: ${quoteWarranty}${quoteOrigin ? `, Origin: ${quoteOrigin}` : ''}`,
                     quoteDetails: {
@@ -2552,7 +2787,11 @@
                         origin: quoteOrigin,
                         originalPrice: originalPrice
                     }
-                } : o));
+                };
+                
+                await updateOrderInSupabase(quoteToConfirm.id, updates);
+                
+                setOrders(orders.map(o => o.id === quoteToConfirm.id ? { ...o, ...updates } : o));
                 
                 // Detect mismatches for notification
                 const mismatches = detectQuoteMismatches(quoteToConfirm, {
@@ -2602,16 +2841,19 @@
                 alert('Quote details sent to customer successfully!');
             };
 
-            const submitReview = () => {
+            const submitReview = async () => {
                 if (orderToReview) {
-                    setOrders(orders.map(o => o.id === orderToReview.id ? {
-                        ...o,
+                    const updates = {
                         review: {
                             rating: reviewRating,
                             comment: reviewComment,
                             date: new Date().toLocaleString()
                         }
-                    } : o));
+                    };
+                    
+                    await updateOrderInSupabase(orderToReview.id, updates);
+                    
+                    setOrders(orders.map(o => o.id === orderToReview.id ? { ...o, ...updates } : o));
                     
                     setShowReviewModal(false);
                     setReviewRating(5);
@@ -2622,8 +2864,14 @@
                 }
             };
 
-            const deleteOrder = (id) => {
+            const deleteOrder = async (id) => {
                 if (window.confirm('Are you sure you want to delete this order?')) {
+                    // Delete from Supabase
+                    await supabase
+                        .from('orders')
+                        .delete()
+                        .eq('order_id', id);
+                    
                     setOrders(orders.filter(o => o.id !== id));
                 }
             };
@@ -2812,7 +3060,7 @@
                 setAdminView('edit'); 
             };
 
-            const saveProduct = (e) => { 
+            const saveProduct = async (e) => { 
                 e.preventDefault(); 
                 const img = productForm.imageType === 'url' ? productForm.imageUrl : productForm.imageData; 
                 const finalImg = img || (editingId ? products.find(p => p.id === editingId).image : null); 
@@ -2830,6 +3078,17 @@
                 }
 
                 if (editingId) { 
+                    // Update existing product
+                    await supabase
+                        .from('products')
+                        .update({ 
+                            ...productForm, 
+                            image: finalImg,
+                            datasheet: datasheet,
+                            price: parseFloat(productForm.price) || 0
+                        })
+                        .eq('id', editingId);
+                    
                     setProducts(products.map(p => p.id === editingId ? { 
                         ...p, 
                         ...productForm, 
@@ -2839,21 +3098,32 @@
                     } : p)); 
                     alert('Product updated successfully'); 
                 } else { 
-                    setProducts([{ 
+                    const newProduct = { 
                         id: Date.now().toString(), 
                         ...productForm, 
                         image: finalImg,
                         datasheet: datasheet,
                         price: parseFloat(productForm.price) || 0
-                    }, ...products]); 
+                    };
+                    
+                    // Save to Supabase
+                    await saveProductToSupabase(newProduct);
+                    
+                    setProducts([newProduct, ...products]); 
                     alert('Product added successfully'); 
                 } 
                 resetProductForm(); 
                 setAdminView('list'); 
             };
 
-            const deleteProduct = (id) => { 
+            const deleteProduct = async (id) => { 
                 if(confirm('Are you sure you want to delete this product?')) {
+                    // Delete from Supabase
+                    await supabase
+                        .from('products')
+                        .delete()
+                        .eq('id', id);
+                    
                     setProducts(products.filter(p => p.id !== id));
                 }
             };
@@ -2981,6 +3251,17 @@
                 setIsOrderModalOpen(true);
                 setIsCartOpen(false);
             };
+
+            if (loading) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-brandBlue border-solid mx-auto mb-4"></div>
+                            <p className="text-brandDark font-bold">Loading your data...</p>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
                 <div className="min-h-screen flex flex-col font-sans text-brandDark bg-slate-50">
