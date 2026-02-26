@@ -1,0 +1,16 @@
+{
+  "name": "shafa-abid-automation",
+  "version": "1.0.0",
+  "description": "Shafa Abid Automation BD - E-commerce",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "build": "echo 'No build required'"
+  },
+  "keywords": ["automation", "ecommerce"],
+  "author": "Shafa Abid Automation BD",
+  "license": "MIT",
+  "dependencies": {
+    "serve": "^14.0.0"
+  }
+}
