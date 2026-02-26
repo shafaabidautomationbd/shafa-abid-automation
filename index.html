@@ -567,14 +567,14 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef, useCallback } = React;
 
-// Supabase Configuration - সঠিক তথ্য দিয়ে
-const supabaseUrl = 'postgresql://postgres.ymsgbefursktbijgjdfy:[YOUR-PASSWORD]@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres';
+// Supabase Configuration with Transaction Pooler
+const supabaseUrl = 'https://aws-1-ap-southeast-1.pooler.supabase.com';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltc2diZWZ1cnNrdGJpamdqZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNDY2NDgsImV4cCI6MjA4NzYyMjY0OH0.luUFjfy0XFOUZfPjsyI2FbZvUuq_xYB4wVDfDUlKrDc';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-// টেস্ট কানেকশন (ঐচ্ছিক)
+// কানেকশন টেস্ট
 console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase configured');
+console.log('Supabase configured with Transaction Pooler');
 
         // কানেকশন টেস্ট
 (async () => {
