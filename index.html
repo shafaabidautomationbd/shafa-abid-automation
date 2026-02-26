@@ -568,7 +568,7 @@
         const { useState, useMemo, useEffect, useRef, useCallback } = React;
 
 // Supabase Configuration - সঠিক তথ্য দিয়ে
-const supabaseUrl = 'https://ymsgbefursktbijgjdfy.supabase.co';
+const supabaseUrl = 'postgresql://postgres.ymsgbefursktbijgjdfy:[YOUR-PASSWORD]@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltc2diZWZ1cnNrdGJpamdqZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNDY2NDgsImV4cCI6MjA4NzYyMjY0OH0.luUFjfy0XFOUZfPjsyI2FbZvUuq_xYB4wVDfDUlKrDc';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
