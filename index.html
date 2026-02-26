@@ -567,25 +567,16 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef, useCallback } = React;
 
-const supabaseUrl = 'https://ymsgbefursktbjgjdfy.supabase.co';
+// Supabase Configuration - সঠিক URL এবং Key
+const supabaseUrl = 'https://ymsgbefursktbijgjdfy.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltc2diZWZ1cnNrdGJpamdqZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNDY2NDgsImV4cCI6MjA4NzYyMjY0OH0.luUFjfy0XFOUZfPjsyI2FbZvUuq_xYB4wVDfDUlKrDc';
 
-// Supabase ক্লায়েন্ট তৈরি করুন
-const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'Access-Control-Allow-Origin': 'https://shafa-abid-automation.vercel.app'
-    }
-  }
-});
+// Supabase ক্লায়েন্ট তৈরি
+const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
 // কানেকশন টেস্ট
-console.log('Supabase configured with headers');
+console.log('✅ Supabase URL:', supabaseUrl);
+console.log('✅ Supabase configured');
         
         // --- CONSTANTS & DATA ---
         const COMPANY_INFO = {
