@@ -567,28 +567,25 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef, useCallback } = React;
 
-// Supabase Configuration with Transaction Pooler
 const supabaseUrl = 'https://aws-1-ap-southeast-1.pooler.supabase.com';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inltc2diZWZ1cnNrdGJpamdqZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNDY2NDgsImV4cCI6MjA4NzYyMjY0OH0.luUFjfy0XFOUZfPjsyI2FbZvUuq_xYB4wVDfDUlKrDc';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+// Supabase ক্লায়েন্ট তৈরি করুন
+const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'Access-Control-Allow-Origin': 'https://shafa-abid-automation.vercel.app'
+    }
+  }
+});
 
 // কানেকশন টেস্ট
-console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase configured with Transaction Pooler');
-
-        // কানেকশন টেস্ট
-(async () => {
-  try {
-    const { data, error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-    if (error) {
-      console.error('❌ Supabase connection error:', error);
-    } else {
-      console.log('✅ Supabase connected successfully!');
-    }
-  } catch (err) {
-    console.error('❌ Supabase test failed:', err);
-  }
-})();
+console.log('Supabase configured with headers');
         
         // --- CONSTANTS & DATA ---
         const COMPANY_INFO = {
